@@ -77,6 +77,7 @@ abstract class Arguments {
   boolean justPrintUsage;
   boolean justPrintVersion;
   boolean justPrintDiagnostics;
+  boolean printStacktrace = false;
   final Map<String, Object> definedProps = new HashMap<>();
   int repeat = 1;
 
@@ -114,6 +115,8 @@ abstract class Arguments {
       msgOutputLevel = Project.MSG_VERBOSE;
     } else if (isLongForm(arg, "-debug") || arg.equals("-d")) {
       msgOutputLevel = Project.MSG_DEBUG;
+    } else if (isLongForm(arg, "-stacktrace")) {
+      printStacktrace = true;
     } else if (isLongForm(arg, "-emacs") || arg.equals("-e")) {
       emacsMode = true;
     } else if (isLongForm(arg, "-logfile") || arg.equals("-l")) {
@@ -133,7 +136,7 @@ abstract class Arguments {
 
   void handleArgLogFile(String arg, Deque<String> args) {
     final Map.Entry<String, String> entry = parse(arg, args);
-    if (entry.getValue() == null) {
+    if (entry.getValue() == null || entry.getValue().isBlank()) {
       throw new BuildException("Missing value for log file " + entry.getKey());
     }
     logFile = new File(entry.getValue());
@@ -309,5 +312,16 @@ abstract class Arguments {
         return value;
       }
     }
+  }
+
+  /**
+   * Get argument name
+   */
+  String getArgumentName(final String arg) {
+    int pos = arg.indexOf("=");
+    if (pos == -1) {
+      pos = arg.indexOf(":");
+    }
+    return arg.substring(0, pos != -1 ? pos : arg.length());
   }
 }
